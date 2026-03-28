@@ -67,7 +67,7 @@ export default function HomePage() {
       setPosts(data);
       setCurrentPage(1);
     } catch (err) {
-      // HACK: Silently failing on search errors
+
       console.error('Search error:', err);
     } finally {
       setIsLoading(false);
