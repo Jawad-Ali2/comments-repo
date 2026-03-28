@@ -156,7 +156,6 @@ export default function HomePage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            // BUG: Pagination doesn't scroll to top
             // TODO: Add smooth scroll animation
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <Pagination
