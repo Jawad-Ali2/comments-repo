@@ -19,7 +19,7 @@ export default function HomePage() {
   const postsPerPage = 12;
   const totalPages = Math.ceil(posts.length / postsPerPage);
 
-  // TODO: Move API calls to custom hooks
+
   // FIXME: No debouncing on search requests
   useEffect(() => {
     const fetchPosts = async () => {
