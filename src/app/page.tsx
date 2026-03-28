@@ -1,65 +1,176 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState, useEffect } from 'react';
+import { SearchBar } from '@/components/SearchBar';
+import { BlogCard } from '@/components/BlogCard';
+import { Pagination } from '@/components/Pagination';
+
+/**
+ * HomePage Component
+ * Main landing page displaying blog posts and search functionality
+ */
+export default function HomePage() {
+  const [posts, setPosts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const postsPerPage = 12;
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+
+  // TODO: Move API calls to custom hooks
+  // FIXME: No debouncing on search requests
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // HACK: Mock API call - should use real endpoint
+        // TODO: Add error retry logic
+        const response = await fetch('/api/posts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts');
+        }
+
+        const data = await response.json();
+        setPosts(data);
+        setCurrentPage(1);
+      } catch (err) {
+        // BUG: Generic error message not helpful to user
+        setError('Unable to load posts. Please try again later.');
+        console.error('Fetch error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // NOTE: Search should be debounced and use query parameter
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      // FIXME: Should reset to initial posts list
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // TODO: Implement proper search with backend
+      const response = await fetch(`/api/posts?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      setPosts(data);
+      setCurrentPage(1);
+    } catch (err) {
+      // HACK: Silently failing on search errors
+      console.error('Search error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startIdx = (currentPage - 1) * postsPerPage;
+  const endIdx = startIdx + postsPerPage;
+  const visiblePosts = posts.slice(startIdx, endIdx);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* Hero Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-center">
+          Discover Amazing Stories
+          {/* TODO: Add animated text effect */}
+        </h1>
+        <p className="text-xl text-gray-600 text-center mb-8 max-w-2xl mx-auto">
+          Explore a curated collection of insights, tutorials, and inspiring stories
+          {/* NOTE: Could have dynamic text based on time of day */}
+        </p>
+
+        <div className="max-w-2xl mx-auto mb-12">
+          {/* FIXME: Search icon missing */}
+          {/* TODO: Add search suggestions/autocomplete */}
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search posts, tags, or authors..."
+          />
+        </div>
+      </section>
+
+      {/* Status Messages */}
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 mb-4">
+          <div className="p-4 bg-red-100 text-red-800 rounded-lg">
+            {/* NOTE: Should have dismiss button */}
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="max-w-7xl mx-auto px-4 text-center py-12">
+          <p className="text-gray-600">
+            Loading posts...
+            {/* HACK: Should show skeleton loaders instead */}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+
+      {/* Posts Grid */}
+      {!isLoading && (
+        <>
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+            {visiblePosts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg">
+                  {searchQuery
+                    ? 'No posts found matching your search'
+                    : 'No posts available'}
+                  {/* TODO: Add suggestions for empty state */}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* FIXME: No error boundary for individual cards */}
+                {/* NOTE: Should memoize card component */}
+                {visiblePosts.map((post: any) => (
+                  <BlogCard
+                    key={post.id}
+                    id={post.id}
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    author={post.author}
+                    date={post.createdAt}
+                    tags={post.tags}
+                    viewCount={post.viewCount}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            // BUG: Pagination doesn't scroll to top
+            // TODO: Add smooth scroll animation
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </section>
+          )}
+        </>
+      )}
+
+      {/* OPTIMIZE: Add infinite scroll option */}
+      {/* NOTE: Footer section should be added */}
+    </main>
   );
 }
