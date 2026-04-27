@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       const results = await contentService.searchPosts(query);
       return NextResponse.json(results);
     }
-    // Replace tag from here please!
+    // FIXME: Replace tag from here please!
     if (tag) {
       // FIXME: No validation of tag parameter
       const results = await contentService.getPostsByTag(tag);
