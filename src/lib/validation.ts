@@ -17,8 +17,7 @@ export function validateUserInput(input: string, maxLength: number = 1000): stri
 
   if (input.length > maxLength) {
     throw new Error(`Input exceeds maximum length of ${maxLength}`);
-  }
-  // TODO: THIS IS A NEW COMMIT - 28 April
+    }
   return input.trim();
 }
 
